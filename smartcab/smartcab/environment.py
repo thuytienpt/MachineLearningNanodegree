@@ -431,7 +431,7 @@ class Agent(object):
         return self.state
 
     def get_next_waypoint(self):
-        return self.next_waypoint  
+        return self.next_waypoint
 
 
 class DummyAgent(Agent):
