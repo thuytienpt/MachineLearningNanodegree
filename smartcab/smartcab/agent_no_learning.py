@@ -110,10 +110,10 @@ class LearningAgent(Agent):
         # When learning, choose a random action with 'epsilon' probability
         # Otherwise, choose an action with the highest Q-value for the current state
         # Be sure that when choosing an action with highest Q-value that you randomly select between actions that "tie".
-        # if self.learning:
-        #     action = None
-        # else:
-        #     action = random.choice(self.valid_actions)
+        if self.learning:
+            action = None
+        else:
+            action = random.choice(self.valid_actions)
         return action
 
 
@@ -178,7 +178,7 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=1, log_metrics=True)
+    sim = Simulator(env, update_delay=0.01, log_metrics=True)
 
     ##############
     # Run the simulator
