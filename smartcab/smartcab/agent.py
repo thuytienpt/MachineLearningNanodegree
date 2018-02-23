@@ -26,7 +26,7 @@ class LearningAgent(Agent):
         ###########
         # Set any additional class parameters as needed
         self.t = 0
-        self.a = 0.08
+        self.a = 0.001
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -44,13 +44,7 @@ class LearningAgent(Agent):
             self.epsilon = 0
             self.alpha = 0
         else:
-            # self.epsilon = 1.0/(self.t ** 2)
-            # self.epsilon = (self.a)**self.t
-            # self.epsilon = math.exp(-(self.a*self.t))
-            # self.alpha = 1.0/(1+ self.t)
-            # self.epsilon = math.cos(self.a * self.t * math.pi / 180)
-
-            self.epsilon = math.cos(0.001 * self.t)
+            self.epsilon = math.cos(self.a * self.t)
 
         return None
 
@@ -122,8 +116,9 @@ class LearningAgent(Agent):
         # When learning, implement the value iteration update rule
         # Use only the learning rate 'alpha' (do not use the discount factor
         # 'gamma')
-        self.Q[state][action] = (1 - self.alpha) * \
-            self.Q[state][action] + self.alpha * reward
+        if self.learning:
+            self.Q[state][action] = (1 - self.alpha) * \
+                self.Q[state][action] + self.alpha * reward
         return
 
     def update(self):
