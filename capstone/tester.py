@@ -37,11 +37,13 @@ if __name__ == '__main__':
         # Set the robot in the start position. Note that robot position
         # parameters are independent of the robot itself.
         robot_pos = {'location': [0, 0], 'heading': 'up'}
-
         run_active = True
         hit_goal = False
         while run_active:
             # check for end of time
+
+            # print str(total_time), 'test location :', robot_pos['location']
+
             total_time += 1
             if total_time > max_time:
                 run_active = False
@@ -112,3 +114,4 @@ if __name__ == '__main__':
     # Report score if robot is successful.
     if len(runtimes) == 2:
         print "Task complete! Score: {:4.3f}".format(runtimes[1] + train_score_mult*runtimes[0])
+        print 'Run1 = {}, Run2 = {}'.format(runtimes[0], runtimes[1])
