@@ -1,75 +1,56 @@
 import numpy as np
-from globalvariables import *
-from controller import DepthFirstSearch, AStar
+from map import Map
+from search import Random, WallFollower, Tremaux, DepthFirstSearch, Heuristic, DynamicProgramming
 
 
 
+SIMULATION = 0
+SEARCH =  Random
 class Robot(object):
-    def __init__(self, maze_dim):
 
+    # def __init__(self, maze_dim, search_agent, fn, max_step=1,  simulation = SIMULATION):
+    def __init__(self, maze_dim, search_agent = SEARCH, max_step=1, simulation = SIMULATION):
+        '''
+        Use the initialization function to set up attributes that your robot
+        will use to learn and navigate the maze. Some initial attributes are
+        provided based on common information, including the size of the maze
+        the robot is placed in.
+        '''
         self.location = [0, 0]
-        self.heading = 'u'
-        self.maze_dim = maze_dim
-        self.goalbound = [maze_dim/2 - 1, maze_dim/2]
-        self.run_trial = 1
-        self.optimal_path = list()
-        self.controller = DepthFirstSearch(maze_dim)
-        # self.controller = AStar(maze_dim)
+        self.heading = 'up'
+        self.runtime = 1
+        self.map = Map(maze_dim, simulation, max_step)
+        # self.search_agent = DepthFirstSearch(self.map)
+        # self.search_agent = Heuristic(self.map, 'f2')
+        # self.search_agent = WallFollower(self.map)
+        # self.search_agent = Tremaux(self.map, 'pre')
+        self.search_agent = search_agent(self.map)
+        self.optimization = DynamicProgramming(self.map)
 
-    def adjust_current_location(self, next_location, next_direction):
-        self.location = next_location
-        self.heading = next_direction
-        # print 'Location: {}  \n Robot has discovered {:4.3f} of the maze.'.format(self.location, self.controller.coverage*self.maze_dim*self.maze_dim/100)
-
-
-    def steering(self, next_location):
-        dir_vector = np.subtract(next_location, self.location)
-        steps = abs(sum(dir_vector))
-        dir_vector = list(dir_vector/steps)
-        # print self.location, next_location, dir_vector
-        next_direction = [d for d in dir_move if dir_move[d] == dir_vector][0]
-        if next_direction == dir_reverse[self.heading]:
-            return 0, -steps, self.heading
-        rotation = dir_rotation[self.heading][next_direction]
-        return rotation, steps, next_direction
 
     def next_move(self, sensors):
-        if self.check_in_goalbound(self.location):
-            self.optimal_path = self.controller.optimal_path
-            print self.optimal_path
-            self.reset_startState()
+        if self.map.hit_goal():
+            self.runtime = 2
+            self.optimization.find_optimal_path()
+            self.map.current = self.map._start()
             return 'Reset', 'Reset'
 
-        if self.run_trial == 1:
-            next_location =  self.exploration_run(sensors)
+        if self.runtime == 1:
+            next_heading = self.explore(sensors)
         else:
-            next_location = self.optimization_run()
-        rotation, movement, next_direction = self.steering(next_location)
-        # if self.run_trial == 2:
-        #     self.grid.update_route(self.location, movement, next_direction)
+            next_heading = self.exploit()
+        rotation, movement =  self.map.adjust(next_heading, self.runtime)
 
-            # if not self.optimal_path:
-            #     self.grid.print_route()
-        self.adjust_current_location(next_location, next_direction)
+        # print next_heading, rotation, movement, self.map.current.__str__()
         return rotation, movement
 
-    def exploration_run(self, sensors):
-        sensors = dict({d:s for d, s in zip(dir_sensors[self.heading], sensors)})
-        return self.controller.determite_next_location(sensors)
 
-    def optimization_run(self):
-        return self.optimal_path.pop(0)
 
-    def check_in_goalbound(self, location):
-        return all((coord in self.goalbound for coord in location))
+    def explore(self, sensors):
+        self.map.mark_walls(sensors)
+        return self.search_agent.get_successor()
 
-    def reset_startState(self):
-        self.location = [0, 0]
-        self.heading = 'u'
-        self.run_trial = 2
 
-    # def get_best_route(self):
-    #     if self.value_function:
-    #         self.optimal_path = self.controller.find_optimal_path()
-    #     else:
-    #         self.optimal_path = self.controller.reconstruct_path()
+    def exploit(self):
+        return self.optimization.path.pop(0)
+

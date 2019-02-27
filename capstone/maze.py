@@ -60,7 +60,7 @@ class Maze(object):
         """
         Returns a boolean designating whether or not a cell is passable in the
         given direction. Cell is input as a list. Directions may be
-        input as single letter 'u', 'r', 'd', 'l', or complete words 'up', 
+        input as single letter 'u', 'r', 'd', 'l', or complete words 'up',
         'right', 'down', 'left'.
         """
         dir_int = {'u': 1, 'r': 2, 'd': 4, 'l': 8,
